@@ -26,6 +26,47 @@
   - **Footprint:** Dedicated footprint to add an optional **Bosch BME280** (Temperature, Humidity, Barometric Pressure via I2C)
 - **Interfaces & Debugging:**
   - **UART2:** Serial flashing & console interface (Arduino IDE / RUI3 bootloader support)
+  <table>
+  <tr>
+    <td width="60%" valign="top">
+      <img src="Hardware/photo/TTL.jpeg" alt="TTL Board" width="100%" />
+    </td>
+    <td width="40%" valign="top">
+
+<table width="100%">
+        <tr>
+          <th align="left">TTL PIN</th>
+          <th align="left">EDU_RAK_2026 PIN</th>
+        </tr>
+        <tr>
+          <td><b>5V</b></td>
+          <td><code>NC</code></td>
+        </tr>
+        <tr>
+          <td><b>VCC</b></td>
+          <td><code>NC</code></td>
+        </tr>
+        <tr>
+          <td><b>3V3</b></td>
+          <td><code>Pwr</code></td>
+        </tr>
+        <tr>
+          <td><b>TXD</b></td>
+          <td><code>UART2_RX (<b>PA2</b>)</code></td>
+        </tr>
+        <tr>
+          <td><b>RXD</b></td>
+          <td><code>UART2_TX (<b>PA3</b>)</code></td>
+        </tr>
+        <tr>
+          <td><b>GND</b></td>
+          <td><code>GND</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
   - **SWD:** Dedicated SWD header (`SWDIO`, `SWCLK`, `NRST`) for ST-LINK / J-Link debugging
   - Status indicator LEDs (**D1**) and User push buttons (**SW3**)
 
