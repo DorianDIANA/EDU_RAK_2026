@@ -40,4 +40,5 @@
 │   ├── pcb/            # PCB layout, Gerber files, BOM, Pick & Place
 │   ├── 3d/             # 3D files
 |   └── kicad/          # kicad project
+├── datasheets/         # Component datasheets (RAK3172, sensors, etc.)
 └── README.md
