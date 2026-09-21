@@ -7,7 +7,7 @@
 ## 📸 Project Overview
 
 <p align="center">
-  <img src="photo_v1.jpeg" alt="EDU RAK 2026 Top View"  />
+  <img src="Hardware/photo/photo_v1.jpeg" alt="EDU RAK 2026 Top View"  />
 </p>
 
 ---
