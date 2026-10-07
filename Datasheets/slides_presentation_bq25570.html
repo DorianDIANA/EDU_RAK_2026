@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BQ25570 & Energy Harvesting - Master 2 Électronique</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/night.css" id="theme">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/monokai-sublime.css">
+  <script>
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match(/print-pdf/gi) ? 'https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/print/pdf.css' : '';
+    if (link.href) document.getElementsByTagName('head')[0].appendChild(link);
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/math/math.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --accent-color: #00e5ff;
+      --accent-secondary: #ffab00;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(0, 229, 255, 0.2);
+    }
+    @page {
+      size: landscape;
+      margin: 0;
+    }
+    .reveal { font-size: 26px; }
+    .reveal h1, .reveal h2, .reveal h3 { color: var(--accent-color); font-weight: 700; text-transform: none; }
+    .reveal h1 { font-size: 2.1em; }
+    .reveal h2 { font-size: 1.5em; border-bottom: 2px solid var(--accent-secondary); padding-bottom: 8px; }
+    .reveal h3 { font-size: 1.2em; color: var(--accent-secondary); }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #00b4db, #0083b0);
+      color: white;
+      font-size: 0.7em;
+      font-weight: bold;
+      vertical-align: middle;
+      margin-bottom: 10px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      text-align: left;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .card-highlight {
+      border-left: 4px solid var(--accent-color);
+    }
+    .card-warning {
+      border-left: 4px solid var(--accent-secondary);
+    }
+    table.custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78em;
+      margin-top: 10px;
+    }
+    table.custom-table th {
+      background-color: rgba(0, 229, 255, 0.15);
+      color: var(--accent-color);
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    table.custom-table td {
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .formula-box {
+      background: rgba(0, 229, 255, 0.08);
+      border-left: 4px solid var(--accent-color);
+      padding: 12px 18px;
+      margin: 12px 0;
+      border-radius: 0 8px 8px 0;
+      text-align: center;
+    }
+    ul, ol { text-align: left; line-height: 1.45; }
+    li { margin-bottom: 6px; }
+    .footer-note {
+      position: fixed;
+      bottom: 12px;
+      left: 20px;
+      font-size: 0.5em;
+      color: rgba(255,255,255,0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: Titre -->
+      <section>
+        <div class="badge">Master 2 Électronique & Systèmes Embarqués</div>
+        <h1 style="font-size: 2.2em; margin-top: 10px;">Le PMIC TI BQ25570</h1>
+        <h3 style="color: #ffab00; font-size: 1.3em;">Energy Harvesting & Dimensionnement Solaire</h3>
+        <p style="margin-top: 30px; font-size: 0.85em; opacity: 0.85;">
+          Architecture Ultra-Low Power, Algorithme MPPT FOCV, Régulation Buck & Calculs Rigoureux de Dimensionnement
+        </p>
+        <p style="font-size: 0.7em; color: var(--accent-color); margin-top: 40px;">
+          Support de Cours Magistral / Travaux Dirigés
+        </p>
+      </section>
+
+      <!-- Slide 2: Sommaire -->
+      <section>
+        <h2>Sommaire du Cours</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Partie I : Théorie & Modélisation</h3>
+            <ul>
+              <li>Enjeux de l'Energy Harvesting en IoT</li>
+              <li>Modèle électrique de la cellule PV (1 diode)</li>
+              <li>Courbes I-V, P-V et concept du MPPT</li>
+              <li>Environnements : Indoor vs Outdoor</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Partie II : Architecture & Dimensionnement</h3>
+            <ul>
+              <li>Architecture interne du BQ25570</li>
+              <li>Cold-Start, Boost synchrone & Buck Nanopower</li>
+              <li>Formules et calcul des ponts de polarisation</li>
+              <li>Cas d'étude concret (Projet RAK3172 LoRaWAN)</li>
+              <li>Exercice de TD & Règles de routage PCB</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: Le défi de l'ULP -->
+      <section>
+        <h2>1. Profil Énergétique d'un Nœud Sans-Fil</h2>
+        <div class="grid-2">
+          <div class="card card-highlight">
+            <h3>Le Paradoxe Énergétique</h3>
+            <ul>
+              <li><strong>Consommation en veille</strong> : $50\,\text{nA} - 1\,\mu\text{A}$ ($99.9\%$ du temps).</li>
+              <li><strong>Crêtes d'émission RF</strong> : $30\,\text{mA} - 120\,\text{mA}$ pendant quelques dizaines de ms.</li>
+              <li><strong>Puissance moyenne requise</strong> : Souvent seulement $5\,\mu\text{W}$ à $200\,\mu\text{W}$.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Contrainte sur le PMIC</h3>
+            <ul>
+              <li>Le courant propre de repos ($I_Q$) du PMIC doit être <strong>négligeable</strong> devant le courant de veille ($I_Q < 500\,\text{nA}$).</li>
+              <li>Nécessité d'un réservoir d'énergie (Supercap / Batterie) capable de délivrer la pointe de courant.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: Modèle Photovoltaïque -->
+      <section>
+        <h2>2. Modèle Électrique du Panneau Solaire</h2>
+        <div class="formula-box">
+          $$I = I_{ph} - I_0 \left[ \exp\left( \frac{q(V + I R_s)}{n k_B T} \right) - 1 \right] - \frac{V + I R_s}{R_{sh}}$$
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <ul>
+              <li><strong>$I_{ph}$</strong> : Photocourant $\propto$ Flux lumineux $G$ ($W/m^2$ ou Lux).</li>
+              <li><strong>$I_0$</strong> : Courant de saturation inverse ($10^{-12}-10^{-9}\,\text{A}$).</li>
+              <li><strong>$n$</strong> : Facteur d'idéalité ($1 \le n \le 2$).</li>
+            </ul>
+          </div>
+          <div class="card">
+            <ul>
+              <li><strong>$R_s$</strong> : Résistance série (pertes ohmiques contacts/grille).</li>
+              <li><strong>$R_{sh}$</strong> : Résistance shunt (fuites périphériques de jonction).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 5: Courbes I-V et MPPT -->
+      <section>
+        <h2>2. Caractéristique P-V et Principe FOCV</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Points Remarquables</h3>
+            <ul>
+              <li><strong>$V_{OC}$</strong> : Tension à vide ($I = 0$).</li>
+              <li><strong>$I_{SC}$</strong> : Courant de court-circuit ($V = 0$).</li>
+              <li><strong>$P_{MAX}$ (MPP)</strong> : Point où le rectangle $V_{MPP} \times I_{MPP}$ est maximal.</li>
+              <li><strong>Fill Factor</strong> : $FF = \frac{V_{MPP} \cdot I_{MPP}}{V_{OC} \cdot I_{SC}} \approx 0.7 - 0.85$.</li>
+            </ul>
+          </div>
+          <div class="card card-highlight">
+            <h3>Technique FOCV (Fractional $V_{OC}$)</h3>
+            <p>Pour le silicium, le rapport $V_{MPP} / V_{OC}$ est quasi-invariant par rapport à l'éclairement :</p>
+            <div class="formula-box">
+              $$V_{MPP} \approx k_{PV} \cdot V_{OC} \quad (k_{PV} \approx 75\% - 80\%)$$
+            </div>
+            <p style="font-size:0.8em; opacity:0.8;">
+              $\implies$ Permet un asservissement analogique périodique ultra-simple sans calcul MCU !
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 6: Indoor vs Outdoor -->
+      <section>
+        <h2>2. Indoor vs Outdoor : Ordres de Grandeur</h2>
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Environnement</th>
+              <th>Éclairement</th>
+              <th>Puissance Lumineuse</th>
+              <th>Puissance Électrique Récoltée ($S=10\,\text{cm}^2, \eta=15\%$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Plein Soleil (Outdoor)</strong></td>
+              <td>$100\,000\text{ Lux}$</td>
+              <td>$100\text{ mW/cm}^2$</td>
+              <td style="color:#00e5ff; font-weight:bold;">$\approx 150\text{ mW}$</td>
+            </tr>
+            <tr>
+              <td><strong>Ciel Couvert (Outdoor)</strong></td>
+              <td>$10\,000\text{ Lux}$</td>
+              <td>$10\text{ mW/cm}^2$</td>
+              <td style="color:#00e5ff;">$\approx 15\text{ mW}$</td>
+            </tr>
+            <tr>
+              <td><strong>Bureau Éclairé (Indoor)</strong></td>
+              <td>$500\text{ Lux}$</td>
+              <td>$\approx 2\text{ W/m}^2$</td>
+              <td style="color:#ffab00; font-weight:bold;">$\approx 20 - 40\,\mu\text{W}$</td>
+            </tr>
+            <tr>
+              <td><strong>Zone Sombre / Couloir</strong></td>
+              <td>$100 - 200\text{ Lux}$</td>
+              <td>$\approx 0.5\text{ W/m}^2$</td>
+              <td style="color:#ff5252; font-weight:bold;">$\approx 5 - 10\,\mu\text{W}$</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size: 0.8em; margin-top: 15px; opacity: 0.85;">
+          En Indoor, la puissance disponible est de l'ordre de la dizaine de microwatts : <strong>un PMIC classique consommerait toute l'énergie produite !</strong>
+        </p>
+      </section>
+
+      <!-- Slide 7: Le BQ25570 -->
+      <section>
+        <h2>3. Présentation du TI BQ25570</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Performances Clés</h3>
+            <ul>
+              <li><strong>Cold-Start</strong> : Démarre dès $V_{IN} \ge 330\,\text{mV}$ et $P_{IN} \ge 15\,\mu\text{W}$.</li>
+              <li><strong>Post-Start</strong> : Fonctionne jusqu'à $V_{IN} = 100\,\text{mV}$ !</li>
+              <li><strong>Courant de repos ($I_Q$)</strong> : $488\,\text{nA}$ typique.</li>
+              <li><strong>Sortie Buck</strong> : Régulée ($1.3\,\text{V} - V_{BAT}$), jusqu'à $110\,\text{mA}$.</li>
+            </ul>
+          </div>
+          <div class="card card-highlight">
+            <h3>Blocs Intégrés</h3>
+            <ul>
+              <li>Oscillateur Ring de démarrage à froid</li>
+              <li>Convertisseur Boost synchrone à contrôle PFM</li>
+              <li>Circuit d'échantillonnage MPPT programmable</li>
+              <li>Gestion batterie : $V_{BAT\_OV}, V_{BAT\_UV}, V_{BAT\_OK}$</li>
+              <li>Régulateur Buck synchrone nanopower</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 8: Machine d'états BQ25570 -->
+      <section>
+        <h2>3. Machine d'États & Fonctionnement</h2>
+        <div class="card">
+          <ol style="font-size: 0.85em;">
+            <li><strong>Phase Cold-Start ($V_{STOR} < 1.8\,\text{V}$)</strong> : Chargeur auxiliaire non-synchrone élève la tension jusqu'à $1.8\,\text{V}$.</li>
+            <li><strong>Phase Main Boost ($V_{STOR} \ge 1.8\,\text{V}$)</strong> : Le Boost synchrone principal s'active avec régulation MPPT.</li>
+            <li><strong>Échantillonnage MPPT périodique</strong> : Toutes les $16\,\text{s}$, l'entrée est ouverte pendant $256\,\text{ms}$ pour mesurer $V_{OC}$ et stocker la consigne $V_{MPP}$ sur $C_{REF}$.</li>
+            <li><strong>Protection Batterie</strong> :
+              <ul>
+                <li>Si $V_{BAT} \ge V_{BAT\_OV}$ : Le Boost s'arrête (anti-surcharge).</li>
+                <li>Si $V_{BAT} < V_{BAT\_UV}$ : Le régulateur Buck est inhibé (anti-décharge profonde).</li>
+                <li>Si $V_{BAT} \ge V_{BAT\_OK\_PROG}$ : Le signal `VBAT_OK` passe au niveau haut pour réveiller le microcontrôleur.</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Slide 9: Règle de dimensionnement des résistances -->
+      <section>
+        <h2>4. Dimensionnement des Ponts de Polarisation</h2>
+        <div class="card card-warning" style="margin-bottom: 20px;">
+          <h3>⚠️ Règle Impérative de l'Ultra-Low Power</h3>
+          <p>La somme des résistances de chaque pont diviseur doit valoir :</p>
+          <div class="formula-box" style="font-size: 1.1em; font-weight: bold;">
+            $$\sum R_{pont} = 10\,\text{M}\Omega \text{ à } 20\,\text{M}\Omega \quad (\text{Typique : } 13\,\text{M}\Omega)$$
+          </div>
+          <p style="font-size: 0.78em; opacity: 0.85;">
+            Sous $3.3\,\text{V}$, un pont classique de $100\,\text{k}\Omega$ consomme $33\,\mu\text{A}$ (inacceptable !).<br>
+            Un pont de $13\,\text{M}\Omega$ ne consomme que <strong>$250\,\text{nA}$</strong>.
+          </p>
+        </div>
+        <p style="font-size: 0.8em; text-align: center;">Tension de référence interne : <strong>$V_{REF\_DC} = 1.21\,\text{V}$</strong></p>
+      </section>
+
+      <!-- Slide 10: Formules de calcul MPPT et OV/UV -->
+      <section>
+        <h2>4. Étage MPPT & Pourquoi Implanter $R_{OC1} / R_{OC2}$</h2>
+        <div class="grid-2">
+          <div class="card card-highlight">
+            <h3>1. Consigne MPPT (`VOC_SAMP`)</h3>
+            <div class="formula-box">
+              $$V_{MPP} = V_{OC} \cdot \left( \frac{R_{OC1}}{R_{OC1} + R_{OC2}} \right)$$
+            </div>
+            <ul>
+              <li>$R_{OC1} = \mathbf{10.5\,\text{M}\Omega}$, $R_{OC2} = \mathbf{2.61\,\text{M}\Omega}$ ($80.09\%$).</li>
+              <li>Somme totale : $13.11\,\text{M}\Omega$ ($I_{leak} \approx 180\,\text{nA}$).</li>
+            </ul>
+          </div>
+          <div class="card card-warning">
+            <h3>⚠️ Pourquoi Implanter le Pont $R_{OC}$ ?</h3>
+            <ul style="font-size: 0.8em;">
+              <li><strong>Précision selon technologie</strong> : Permet d'ajuster $k_{PV}$ ($72\%$ Indoor amorphe, $80\%$ Silicium mono, $50\%$ TEG).</li>
+              <li><strong>Stabilité au Cold-Start</strong> : Évite les perturbations de tracking si $V_{STOR}$ oscille au démarrage.</li>
+              <li><strong>Modularité du PCB</strong> : Changement de source sans réimplantation matérielle.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 11: Formules de calcul UV, Buck et VBAT_OK -->
+      <section>
+        <h2>4. Formules de Dimensionnement (2/2)</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>3. Sous-Tension Batterie ($V_{BAT\_UV}$)</h3>
+            <div class="formula-box">
+              $$V_{BAT\_UV} = V_{REF\_DC} \left( 1 + \frac{R_{UV2}}{R_{UV1}} \right)$$
+            </div>
+            <ul>
+              <li>$\frac{R_{UV2}}{R_{UV1}} = \frac{V_{BAT\_UV}}{1.21\,\text{V}} - 1$</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>4. Sortie Régulée Buck ($V_{OUT}$)</h3>
+            <div class="formula-box">
+              $$V_{OUT} = V_{REF\_DC} \left( 1 + \frac{R_{OUT2}}{R_{OUT1}} \right)$$
+            </div>
+            <ul>
+              <li>$\frac{R_{OUT2}}{R_{OUT1}} = \frac{V_{OUT}}{1.21\,\text{V}} - 1$</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 12: Cas d'étude Système LoRaWAN -->
+      <section>
+        <h2>5. Cas d'Étude : Nœud LoRaWAN sur Supercondensateur</h2>
+        <div class="card" style="margin-bottom: 15px;">
+          <h3>Cahier des Charges Système (Projet M2)</h3>
+          <ul style="font-size: 0.85em;">
+            <li><strong>MCU & Transceiver</strong> : RAK3172 (STM32WLE5CC), tension d'alimentation <strong>$V_{OUT} = 3.30\,\text{V}$</strong>.</li>
+            <li><strong>Capteurs</strong> : BME280 (P, T, H) et LIS2HH12 (Accéléromètre $I^2C$).</li>
+            <li><strong>Stockage d'Énergie</strong> : <strong>Supercondensateur $C = 10.0\,\text{F}$</strong> ($V_{max} = 4.00\,\text{V}$, $V_{min} = 2.00\,\text{V}$).</li>
+            <li><strong>Générateur Solaire</strong> : Cellule $4\times$ silicium ($k_{PV} = 80\% \implies V_{MPP} = 1.92\,\text{V}$).</li>
+            <li><strong>Seuils Réveil / Alerte</strong> : $V_{BAT\_OK\_PROG} = 3.60\,\text{V}$ / $V_{BAT\_OK\_HYST} = 3.40\,\text{V}$.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 13: Tableau des valeurs calculées E96 -->
+      <section>
+        <h2>5. Synthèse des Valeurs Normalisées (Série E96)</h2>
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Fonction</th>
+              <th>Paramètre Cible</th>
+              <th>Formule / Rapport</th>
+              <th>Résistances Théoriques</th>
+              <th>Valeurs Normalisées E96 (1%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MPPT Ratio</strong></td>
+              <td>$k_{PV} = 80\%$</td>
+              <td>$R_{OC1} / R_{tot} = 0.80$</td>
+              <td>$10.4\,\text{M}\Omega / 2.60\,\text{M}\Omega$</td>
+              <td>$R_{OC1}=\mathbf{10.5\,\text{M}\Omega}$, $R_{OC2}=\mathbf{2.61\,\text{M}\Omega}$</td>
+            </tr>
+            <tr>
+              <td><strong>Surtension $V_{BAT\_OV}$</strong></td>
+              <td>$4.00\,\text{V}$ (Supercap)</td>
+              <td>$R_{OV2} / R_{OV1} = 1.2039$</td>
+              <td>$5.76\,\text{M}\Omega / 6.93\,\text{M}\Omega$</td>
+              <td>$R_{OV1}=\mathbf{5.76\,\text{M}\Omega}$, $R_{OV2}=\mathbf{6.98\,\text{M}\Omega}$</td>
+            </tr>
+            <tr>
+              <td><strong>Sous-tension $V_{BAT\_UV}$</strong></td>
+              <td>$2.00\,\text{V}$</td>
+              <td>$R_{UV2} / R_{UV1} = 0.6529$</td>
+              <td>$7.87\,\text{M}\Omega / 5.14\,\text{M}\Omega$</td>
+              <td>$R_{UV1}=\mathbf{7.87\,\text{M}\Omega}$, $R_{UV2}=\mathbf{5.11\,\text{M}\Omega}$</td>
+            </tr>
+            <tr>
+              <td><strong>Sortie Buck $V_{OUT}$</strong></td>
+              <td>$3.30\,\text{V}$</td>
+              <td>$R_{OUT2} / R_{OUT1} = 1.7273$</td>
+              <td>$4.75\,\text{M}\Omega / 8.20\,\text{M}\Omega$</td>
+              <td>$R_{OUT1}=\mathbf{4.75\,\text{M}\Omega}$, $R_{OUT2}=\mathbf{8.25\,\text{M}\Omega}$</td>
+            </tr>
+            <tr>
+              <td><strong>Indicateur $V_{BAT\_OK}$</strong></td>
+              <td>$3.60\,\text{V} / 3.40\,\text{V}$</td>
+              <td>Pont triple ($R_{tot}=13\text{M}\Omega$)</td>
+              <td>$4.37 / 3.07 / 5.49\,\text{M}\Omega$</td>
+              <td>$R_{OK1}=\mathbf{4.42\text{M}}$, $R_{OK2}=\mathbf{3.09\text{M}}$, $R_{OK3}=\mathbf{5.49\text{M}}$</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Slide 14: Dimensionnement des Composants Passifs -->
+      <section>
+        <h2>5. Dimensionnement des Composants Passifs</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Inductances</h3>
+            <ul>
+              <li><strong>$L_{BST} = 22\,\mu\text{H}$</strong> : DCR $< 1.5\,\Omega$, $I_{sat} > 150\,\text{mA}$ (ex: Coilcraft LPS3015-223).</li>
+              <li><strong>$L_{OUT} = 10\,\mu\text{H}$</strong> : DCR $< 1\,\Omega$, $I_{sat} > 200\,\text{mA}$ (ex: Murata LQH3NPN100).</li>
+            </ul>
+          </div>
+          <div class="card card-highlight">
+            <h3>Condensateurs & Stockage</h3>
+            <ul>
+              <li><strong>Supercondensateur $C = 10.0\,\text{F} / 4.0\,\text{V}$</strong> sur broche $V_{BAT}$.</li>
+              <li><strong>$C_{STOR} = 4.7\,\mu\text{F}$</strong> : ⚠️ Condensateur céramique local indispensable.</li>
+              <li><strong>$C_{REF} = 10\,\text{nF} - 22\,\text{nF}$</strong> (C0G/NPO très faible fuite).</li>
+              <li><strong>$C_{OUT} = 22\,\mu\text{F}$</strong> (Supporte les pics de courant $30-100\,\text{mA}$ RF).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 15: Pièges de Routage PCB -->
+      <section>
+        <h2>6. Règles de Routage PCB & Pièges Nano-Ampères</h2>
+        <div class="grid-2">
+          <div class="card card-warning">
+            <h3>Courants de Fuite Parasites</h3>
+            <ul>
+              <li>À $10 - 20\,\text{M}\Omega$, une poussière ou de l'humidité créant une fuite de $50\,\text{nA}$ induit une erreur de <strong>$500\,\text{mV}$</strong> !</li>
+              <li><strong>Solutions</strong> : Anneau de garde (Guard Ring) relié à la masse, nettoyage aux ultrasons + <em>Conformal Coating</em> (vernis).</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>CEM et Découplage</h3>
+            <ul>
+              <li>Placer $C_{STOR}$ au plus près physique des broches VSTOR et PGND.</li>
+              <li>Minimiser la surface de la boucle de commutation des broches `LBOOST_SW` et `LBUCK_SW`.</li>
+              <li>Connecter le thermal pad (PowerPAD) directement au plan de masse de référence.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 16: Exercice de TD -->
+      <section>
+        <h2>7. Exercice Pratique : Bilan d'Énergie & Autonomie</h2>
+        <div class="card card-highlight">
+          <p><strong>Cahier des charges :</strong></p>
+          <ul>
+            <li>Élément de stockage : <strong>Supercondensateur $10.0\,\text{F}$</strong> ($V_{max} = 4.00\,\text{V}$, $V_{min} = 2.00\,\text{V}$).</li>
+            <li>Tension de sortie utile : <strong>$V_{OUT} = 3.30\,\text{V}$</strong> ($\eta_{buck} \approx 85\%$).</li>
+            <li>Veille profonde : $P_{sleep} = 10.0\,\mu\text{W}$ ($3.0\,\mu\text{A}$ sous $3.3\text{V}$).</li>
+            <li>Émission LoRaWAN : $E_{tx} = 15.0\,\text{mJ}$ toutes les $10\,\text{minutes}$ ($600\,\text{s}$).</li>
+          </ul>
+          <p style="margin-top: 15px; color: var(--accent-secondary); font-weight: bold;">
+            Question : Calculer l'énergie stockée utile et l'autonomie dans l'obscurité totale.
+          </p>
+        </div>
+      </section>
+
+      <!-- Slide 17: Résolution Exercice TD -->
+      <section>
+        <h2>7. Solution Détaillée du Bilan d'Énergie</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Énergie Stockée ($C=10.0\,\text{F}$)</h3>
+            <div class="formula-box" style="font-size: 0.85em;">
+              $$\Delta E = \frac{1}{2} C (V_{max}^2 - V_{min}^2) = \frac{1}{2} \cdot 10 \cdot (4.0^2 - 2.0^2) = \mathbf{60.00\,\text{J}}$$
+            </div>
+            <p style="font-size: 0.8em;">
+              <strong>Puissance moyenne totale :</strong><br>
+              $P_{tx} = \frac{15\,\text{mJ}}{600\,\text{s}} = 25\,\mu\text{W} \implies P_{total} = 10 + 25 = \mathbf{35\,\mu\text{W}}$<br>
+              Puissance prélevée : $P_{in} = \frac{35\,\mu\text{W}}{0.85} \approx \mathbf{41.2\,\mu\text{W}}$
+            </p>
+          </div>
+          <div class="card card-highlight">
+            <h3>Autonomie en Obscurité Totale</h3>
+            <div class="formula-box" style="font-size: 0.85em;">
+              $$t = \frac{\Delta E}{P_{in}} = \frac{60.00\,\text{J}}{41.18 \times 10^{-6}\,\text{W}} \approx 1.457 \times 10^6\,\text{s}$$
+            </div>
+            <div class="formula-box" style="font-size: 0.85em; background: rgba(0, 229, 255, 0.2);">
+              $$t \approx \mathbf{16.9\,\text{jours avec transmission LoRa}}$$
+              $$t_{veille\_seule} \approx \mathbf{59.0\,\text{jours en veille}}$$
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 18: Conclusion -->
+      <section>
+        <h2>Conclusion & Points Clés pour l'Ingénieur</h2>
+        <div class="card card-highlight">
+          <ol>
+            <li><strong>Le BQ25570</strong> est la référence industrielle pour combiner Boost Harvester MPPT et régulateur Buck sous $I_Q < 500\,\text{nA}$.</li>
+            <li><strong>L'algorithme FOCV</strong> est optimal pour les cellules solaires ($k_{PV} \approx 80\%$) et TEG ($50\%$) sans overhead de calcul.</li>
+            <li><strong>La règle des $10-20\,\text{M}\Omega$</strong> sur les ponts diviseurs est indispensable pour garantir l'autonomie réelle.</li>
+            <li><strong>Le layout PCB</strong> doit impérativement intégrer des anneaux de garde et un vernis protecteur contre les fuites de surface.</li>
+          </ol>
+        </div>
+        <p style="margin-top: 30px; font-size: 0.9em; color: var(--accent-color); text-align: center;">
+          Merci pour votre attention ! Questions & Débat.
+        </p>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      width: 1280,
+      height: 720,
+      margin: 0.05,
+      minScale: 0.2,
+      maxScale: 2.0,
+      plugins: [ RevealMath.KaTeX, RevealHighlight ]
+    });
+  </script>
+</body>
+</html>

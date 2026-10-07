@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Cours M2 : Energy Harvesting, Modélisation Photovoltaïque & PMIC BQ25570</title>
+  
+  <!-- KaTeX pour le rendu mathématique vectoriel haute fidélité -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap');
+
+    @page {
+      size: A4;
+      margin: 18mm 16mm 20mm 16mm;
+      @bottom-right {
+        content: "Page " counter(page);
+        font-family: 'Inter', sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+      @bottom-left {
+        content: "Master 2 Électronique — Systèmes Autonomes & BQ25570";
+        font-family: 'Inter', sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Merriweather', serif;
+      font-size: 10pt;
+      line-height: 1.6;
+      color: #1e293b;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2, h3, h4, h5, th {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Page de garde */
+    .cover-page {
+      page-break-after: always;
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 0 40px 0;
+    }
+
+    .cover-header {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 15px;
+    }
+
+    .cover-header .inst {
+      font-family: 'Inter', sans-serif;
+      font-size: 11pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #0284c7;
+    }
+
+    .cover-header .sub-inst {
+      font-family: 'Inter', sans-serif;
+      font-size: 9pt;
+      color: #64748b;
+    }
+
+    .cover-title-box {
+      margin: auto 0;
+    }
+
+    .cover-title-box h1 {
+      font-size: 24pt;
+      line-height: 1.25;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+
+    .cover-title-box .subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 13pt;
+      font-weight: 400;
+      color: #0284c7;
+      margin-bottom: 25px;
+    }
+
+    .cover-title-box .desc {
+      font-size: 10pt;
+      color: #475569;
+      max-width: 95%;
+      line-height: 1.6;
+      border-left: 3px solid #cbd5e1;
+      padding-left: 15px;
+    }
+
+    .cover-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 15px;
+      font-family: 'Inter', sans-serif;
+      font-size: 9pt;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Titres de chapitres et sections */
+    .chapter {
+      page-break-before: always;
+      margin-top: 10px;
+    }
+
+    h1.chapter-title {
+      font-size: 17pt;
+      color: #0369a1;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 18px;
+      margin-top: 0;
+    }
+
+    h2 {
+      font-size: 12pt;
+      color: #0f172a;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      border-left: 4px solid #0284c7;
+      padding-left: 10px;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      color: #334155;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-align: justify;
+    }
+
+    /* Boîtes de callout */
+    .callout {
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin: 12px 0;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+
+    .callout-info {
+      background-color: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-left: 4px solid #0284c7;
+      color: #0c4a6e;
+    }
+
+    .callout-warning {
+      background-color: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #d97706;
+      color: #78350f;
+    }
+
+    .callout-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* Formules mathématiques */
+    .math-block {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 12px 0;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+
+    /* Tableaux */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 8.8pt;
+      page-break-inside: avoid;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      text-align: left;
+      padding: 7px 9px;
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 6px 9px;
+      border: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    /* Code & ASCII Schemas */
+    pre, code {
+      font-family: 'Fira Code', monospace;
+      font-size: 8pt;
+    }
+
+    .schema-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px;
+      margin: 12px 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 8pt;
+      line-height: 1.3;
+      color: #0f172a;
+      white-space: pre;
+      page-break-inside: avoid;
+    }
+
+    /* Liste */
+    ul, ol {
+      margin-top: 0;
+      margin-bottom: 10px;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PAGE DE GARDE ==================== -->
+  <div class="cover-page">
+    <div class="cover-header">
+      <div class="inst">Master 2 Électronique, Énergie Électrique & Systèmes Embarqués</div>
+      <div class="sub-inst">Systèmes Autonomes, IoT & Gestionnaires d'Énergie Ultra-Low Power</div>
+    </div>
+
+    <div class="cover-title-box">
+      <span class="badge">Polycopié de Cours & Guide de Dimensionnement</span>
+      <h1>Récupération d'Énergie Solaire & Gestionnaire ULP : Le PMIC TI BQ25570</h1>
+      <div class="subtitle">Modélisation Photovoltaïque, MPPT FOCV et Dimensionnement Analytique Complet</div>
+      
+      <div class="desc">
+        Ce document constitue le cours de référence pour la conception de systèmes électroniques autonomes sans pile. Il traite de la physique et de la modélisation des générateurs photovoltaïques, des contraintes sous nano-puissance, de l'architecture interne du PMIC Texas Instruments BQ25570, du dimensionnement rigoureux de tous ses composants passifs et ponts de réglage (Série E96 1%), ainsi que des bonnes pratiques de routage PCB en nano-ampères.
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div><strong>Auteur :</strong> Support Pédagogique M2 Électronique</div>
+      <div><strong>Année Universitaire :</strong> 2026 – 2027</div>
+    </div>
+  </div>
+
+  <!-- ==================== CHAPITRE 1 ==================== -->
+  <div class="chapter">
+    <h1 class="chapter-title">Chapitre 1 : Le Défi de l'Energy Harvesting & l'Ultra-Low Power</h1>
+
+    <h2>1.1 Profils de Consommation en IoT et Paradoxe Énergétique</h2>
+    <p>
+      Les objets connectés modernes (LoRaWAN, Sigfox, BLE, Zigbee) fonctionnent selon un régime temporel cyclé (dit <em>duty-cycled</em>). Ce régime alterne de très longues périodes de veille profonde (<em>Deep Sleep</em>) où la consommation est de quelques dizaines à centaines de nano-ampères ($50\,\text{nA} - 1\,\mu\text{A}$), et de brèves impulsions actives (mesure capteur, calcul microcontrôleur, émission radiofréquence) nécessitant des courants de pointe de $20\,\text{mA}$ à $120\,\text{mA}$ pendant quelques dizaines de millisecondes.
+    </p>
+
+    <div class="math-block">
+      $$P_{moyenne} = \frac{1}{T_{cycle}} \int_{0}^{T_{cycle}} v(t) \cdot i(t) \, dt = \delta \cdot P_{actif} + (1 - \delta) \cdot P_{veille}$$
+    </div>
+
+    <p>
+      Pour un rapport cyclique $\delta = 0.01\%$ ($100\,\text{ms}$ d'activité toutes les $15\,\text{minutes}$), la puissance moyenne requise est fréquemment comprise entre <strong>$5\,\mu\text{W}$ et $100\,\mu\text{W}$</strong>.
+    </p>
+
+    <h2>1.2 Les Contraintes Imposées au Circuit de Gestion d'Énergie (PMIC)</h2>
+    <p>
+      Les transducteurs de micro-récupération (micro-panneaux solaires d'intérieur, thermoélectricité TEG, piézoélectricité) ne fournissent que quelques microwatts sous de très basses tensions ($0.1\,\text{V} - 1.5\,\text{V}$). Les régulateurs de tension conventionnels (LDO classiques ou SMPS standards) présentent des courants de repos de $1\,\mu\text{A}$ à $50\,\mu\text{A}$, ce qui consommerait l'intégralité de l'énergie récoltée.
+    </p>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Règle Fondamentale du Bilan Énergétique</div>
+      Pour qu'un système soit perpétuellement autonome, la puissance moyenne générée par le transducteur ($P_{harv}$) pondérée par le rendement du PMIC ($\eta_{PMIC}$) doit être strictement supérieure à la somme de la consommation de charge ($P_{charge}$) et de l'autoconsommation du PMIC ($P_{IQ}$) :
+      $$\eta_{PMIC} \cdot P_{harv} > P_{charge} + P_{IQ} + P_{fuite\_stockage}$$
+    </div>
+  </div>
+
+  <!-- ==================== CHAPITRE 2 ==================== -->
+  <div class="chapter">
+    <h1 class="chapter-title">Chapitre 2 : Modélisation et Physique de la Cellule Photovoltaïque</h1>
+
+    <h2>2.1 Schéma Équivalent Électrique à 1 Diode</h2>
+    <p>
+      Une cellule photovoltaïque au silicium se modélise par une source de courant commandée par le flux lumineux incident ($I_{ph}$), en parallèle avec une jonction PN (diode de diffusion et recombinaison), une résistance shunt ($R_{sh}$) modélisant les défauts de surface et de bordure, et une résistance série ($R_s$) représentant la résistivité du semi-conducteur et des grilles de collecte métalliques.
+    </p>
+
+    <div class="schema-box">
+             Rs
+    +----/\/\/\/\------------------o (+) V_PV
+    |         |
+   (^) I_ph   | [D1] Diode Shockley
+    |         |
+    |         +----[ Rsh ]---+
+    |         |              |
+    +---------+--------------+-----o (-) GND
+    </div>
+
+    <p>L'équation implicite caractéristique est donnée par la loi de Shockley modifiée :</p>
+    
+    <div class="math-block">
+      $$I(V) = I_{ph} - I_0 \left[ \exp\left( \frac{q (V + I R_s)}{n k_B T} \right) - 1 \right] - \frac{V + I R_s}{R_{sh}}$$
+    </div>
+
+    <ul>
+      <li>$q = 1.602 \times 10^{-19}\,\text{C}$ : charge élémentaire de l'électron.</li>
+      <li>$k_B = 1.381 \times 10^{-23}\,\text{J/K}$ : constante de Boltzmann.</li>
+      <li>$T$ : température absolue de la jonction en Kelvin ($K$).</li>
+      <li>$n$ : facteur d'idéalité de la diode ($1 \le n \le 2$).</li>
+      <li>$I_0$ : courant de saturation inverse ($10^{-12}\,\text{A} - 10^{-9}\,\text{A}$).</li>
+      <li>$I_{ph} \propto G$ : photocourant strictement proportionnel à l'éclairement $G$ ($\text{W/m}^2$).</li>
+    </ul>
+
+    <h2>2.2 Points Caractéristiques et Courbes I-V / P-V</h2>
+    <p>
+      La puissance délivrée par la cellule $P(V) = V \cdot I(V)$ passe par un maximum unique nommé <strong>Point de Puissance Maximale (MPP - Maximum Power Point)</strong>.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Paramètre</th>
+          <th>Notation</th>
+          <th>Expression & Signification Physique</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Tension de circuit ouvert</strong></td>
+          <td>$V_{OC}$</td>
+          <td>$V_{OC} \approx \frac{n k_B T}{q} \ln\left(\frac{I_{ph}}{I_0} + 1\right)$ (Tension mesurée à courant nul $I=0$).</td>
+        </tr>
+        <tr>
+          <td><strong>Courant de court-circuit</strong></td>
+          <td>$I_{SC}$</td>
+          <td>$I_{SC} \approx I_{ph}$ (Courant maximal sous tension nulle $V=0$).</td>
+        </tr>
+        <tr>
+          <td><strong>Point de Puissance Max</strong></td>
+          <td>$(V_{MPP}, I_{MPP})$</td>
+          <td>Coordonnées satisfaisant $\left.\frac{dP}{dV}\right|_{V=V_{MPP}} = 0 \iff I + V\frac{dI}{dV} = 0$.</td>
+        </tr>
+        <tr>
+          <td><strong>Facteur de Forme (Fill Factor)</strong></td>
+          <td>$FF$</td>
+          <td>$FF = \frac{V_{MPP} \cdot I_{MPP}}{V_{OC} \cdot I_{SC}}$ (Indicateur de qualité de la cellule, typ. $0.70 - 0.85$).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>2.3 Le Principe du Fractional Open-Circuit Voltage (FOCV)</h2>
+    <p>
+      Dans les systèmes à micro-énergie, l'implémentation d'un algorithme numérique MPPT complexe (ex. <em>Perturb and Observe</em> ou <em>Incremental Conductance</em>) est proscrite car le microcontrôleur consommerait davantage d'énergie que le gain d'optimisation escompté.
+    </p>
+    <p>
+      L'algorithme **FOCV** repose sur une propriété quasi-linéaire remarquable des semi-conducteurs photovoltaïques : pour une large gamme d'irradiance et de température, le rapport entre la tension optimale $V_{MPP}$ et la tension à vide $V_{OC}$ est pratiquement constant :
+    </p>
+
+    <div class="math-block">
+      $$V_{MPP} = k_{PV} \cdot V_{OC} \quad \text{avec} \quad k_{PV} \approx 0.75 \text{ à } 0.82 \quad (\text{Typiquement } 0.80 \text{ pour le Silicium})$$
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title">💡 Cas particulier du Générateur Thermoélectrique (TEG) :</div>
+      Un module thermoélectrique (effet Seebeck) est une source de Thévenin pure $V_{th} = S_e \cdot \Delta T$ avec résistance interne $R_{int}$. Par adaptation d'impédance ($R_{charge} = R_{int}$), on a exactement $V_{MPP} = 0.50 \cdot V_{OC}$.
+    </div>
+
+    <h2>2.4 Comparatif des Puissances Récoltables : Indoor vs Outdoor</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Scénario Lumineux</th>
+          <th>Éclairement</th>
+          <th>Puissance Lumineuse Incidente</th>
+          <th>Puissance Électrique Récoltée ($S = 10\,\text{cm}^2, \eta=15\%$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Plein Soleil d'été (Outdoor)</strong></td>
+          <td>$100\,000\,\text{Lux}$</td>
+          <td>$100\,\text{mW/cm}^2 = 1000\,\text{W/m}^2$</td>
+          <td><strong>$\approx 150\,\text{mW}$</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Ciel Couvert Extérieur</strong></td>
+          <td>$10\,000\,\text{Lux}$</td>
+          <td>$10\,\text{mW/cm}^2 = 100\,\text{W/m}^2$</td>
+          <td><strong>$\approx 15\,\text{mW}$</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Bureau Éclairé (Néon / LED)</strong></td>
+          <td>$500\,\text{Lux}$</td>
+          <td>$\approx 200\,\mu\text{W/cm}^2 = 2\,\text{W/m}^2$</td>
+          <td><strong>$\approx 30\,\mu\text{W}$</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Couloir / Lumière Faible</strong></td>
+          <td>$100\,\text{Lux}$</td>
+          <td>$\approx 40\,\mu\text{W/cm}^2 = 0.4\,\text{W/m}^2$</td>
+          <td><strong>$\approx 6\,\mu\text{W}$</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ==================== CHAPITRE 3 ==================== -->
+  <div class="chapter">
+    <h1 class="chapter-title">Chapitre 3 : Architecture et Fonctionnement Interne du PMIC TI BQ25570</h1>
+
+    <h2>3.1 Vue d'Ensemble Fonctionnelle</h2>
+    <p>
+      Le **BQ25570** de Texas Instruments combine un convertisseur élévateur (<em>Boost Charger</em>) à contrôle MPPT et un régulateur abaisseur synchrone (<em>Buck Converter</em>) à nano-puissance dans un boîtier QFN-20 de $3.5 \times 3.5\,\text{mm}$.
+    </p>
+
+    <div class="schema-box">
+             +-------------------------------------------------------------+
+             |                     TI BQ25570 PMIC                         |
+             |                                                             |
+   VIN_DC o--+-->[ Cold-Start Oscillator (<1.8V) ]                         |
+             |                   |                                         |
+             |                   v                                         |
+   L_BST  o--+-->[ Main Boost Charger (PFM) ]-----> VSTOR o----------------+--o C_STOR (4.7uF)
+             |          ^ (MPPT FOCV)                 |                    |
+   VOC_SAMP o+----------+                             | [PFET Switch]      |
+             |                                        v                    |
+             |                              VBAT_OV / VBAT_UV / OK         |
+             |                                        |                    |
+             |                                        +--------o VBAT o----+--o BATTERIE / SUPERCAP
+             |                                                             |
+             |   +------------------------------------+                    |
+             +-->| Nano-Power Synchronous Buck (PFM)  |---> L_OUT o--------+--o VOUT (Sortie 3.3V)
+                 +------------------------------------+                    |
+             |                                                             |
+             +-------------------------------------------------------------+
+    </div>
+
+    <h2>3.2 Les Modes et Phases de Fonctionnement</h2>
+    
+    <h3>1. Phase de Démarrage à Froid (Cold-Start)</h3>
+    <p>
+      Lorsque le réservoir de stockage est totalement vide ($V_{STOR} < 1.8\,\text{V}$), un oscillateur auxiliaire en anneau non-synchrone pompe l'énergie d'entrée dès que $V_{IN} \ge 330\,\text{mV}$ et $P_{IN} \ge 15\,\mu\text{W}$ pour amener la tension de $V_{STOR}$ à $1.8\,\text{V}$.
+    </p>
+
+    <h3>2. Phase Nominale du Boost Charger</h3>
+    <p>
+      Dès que $V_{STOR} \ge 1.8\,\text{V}$, le convertisseur Boost synchrone principal prend le relais avec un rendement élevé ($80-90\%$). À partir de cet instant, la tension d'entrée $V_{IN}$ peut chuter jusqu'à <strong>$100\,\text{mV}$</strong> sans interruption de la charge.
+    </p>
+
+    <h3>3. Échantillonnage MPPT Dynamique</h3>
+    <p>
+      Toutes les $16\,\text{secondes}$, le BQ25570 déconnecte le Boost pendant $256\,\text{ms}$ pour échantillonner la tension $V_{OC}$ à vide via le pont diviseur connecté à `VOC_SAMP`. La fraction programmée ($k_{PV} \cdot V_{OC}$) est mémorisée sur le condensateur $C_{REF}$. Pendant les $15.744\,\text{s}$ suivantes, la boucle Boost asservit la tension de la cellule solaire à cette valeur $V_{MPP}$.
+    </p>
+
+    <h3>4. Régulateur Abaisseur (Buck Converter)</h3>
+    <p>
+      Le régulateur Buck intégré puise son énergie sur $V_{STOR}$ pour fournir une tension régulée $V_{OUT}$ (programmable de $1.3\,\text{V}$ à $V_{BAT}$) capable de débiter jusqu'à **$110\,\text{mA}$** en régime impulsionnel RF avec une consommation propre négligeable.
+    </p>
+  </div>
+
+  <!-- ==================== CHAPITRE 4 ==================== -->
+  <div class="chapter">
+    <h1 class="chapter-title">Chapitre 4 : Méthodologie et Calcul des Composants du BQ25570</h1>
+
+    <div class="callout callout-info">
+      <div class="callout-title">📐 Règle Fondamentale de Dimensionnement des Résistances</div>
+      Pour limiter le courant de fuite statique des ponts de mesure sous les $300\,\text{nA}$, Texas Instruments impose que la résistance totale de chaque pont soit comprise entre $10\,\text{M}\Omega$ et $20\,\text{M}\Omega$ (idéalement $13\,\text{M}\Omega$).<br>
+      Tension de référence interne : <strong>$V_{REF\_DC} = 1.21\,\text{V}$ (typique)</strong>.
+    </div>
+
+    <h2>4.1 Étage d'Échantillonnage MPPT (Broche `VOC_SAMP`) : Pourquoi et Comment Implanter le Pont $R_{OC1} / R_{OC2}$</h2>
+    <p>
+      La broche `VOC_SAMP` contrôle le point de fonctionnement optimal de la source de récupération. Lors de chaque cycle d'échantillonnage de $256\,\text{ms}$ (toutes les $16\,\text{s}$), le convertisseur Boost s'interrompt et la tension à vide $V_{OC}$ du panneau solaire est divisée par le pont résistif externe $R_{OC1} - R_{OC2}$ avant d'être mémorisée sur le condensateur $C_{REF}$.
+    </p>
+
+    <div class="schema-box">
+             VIN_DC o---------------+-------------------UUUU----+ (Vers Switch Boost)
+                                    |                   L_BST
+                                   [ ] ROC1 (10.5 MΩ)  (22 uH)
+                                    |
+     [ Pin 19: VOC_SAMP ] <---------+
+                                    |
+                                   [ ] ROC2 (2.61 MΩ)
+                                    |
+                                   === GND
+    </div>
+
+    <div class="math-block">
+      $$k_{PV} = \frac{V_{MPP}}{V_{OC}} = \frac{R_{OC1}}{R_{OC1} + R_{OC2}}$$
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Pourquoi Faut-il Impérativement Prévoir le Pont Externe $R_{OC1} / R_{OC2}$ sur le Schéma ?</div>
+      Bien que le datasheet du BQ25570 indique la possibilité de relier directement `VOC_SAMP` à `VSTOR` pour obtenir un ratio interne fixe de $80\%$ (ou à `GND` pour $50\%$), <strong>l'implantation du pont de résistances externe $R_{OC1} / R_{OC2}$ est fortement recommandée en conception professionnelle</strong> pour trois raisons majeures :
+      <ol>
+        <li><strong>Adaptation exacte à la technologie de cellule :</strong> Les cellules solaires en silicium amorphe d'intérieur (Indoor PV) présentent leur MPP entre $70\%$ et $75\%$ de $V_{OC}$, tandis que le silicium monocristallin extérieur tourne autour de $78\% - 82\%$. Le pont externe permet d'ajuster $k_{PV}$ avec précision ($R_{OC1} = 10.5\,\text{M}\Omega, R_{OC2} = 2.61\,\text{M}\Omega \implies 80.09\%$).</li>
+        <li><strong>Immunité lors du Cold-Start :</strong> Si `VOC_SAMP` est relié à `VSTOR`, l'échantillonnage interne peut être perturbé pendant les phases de démarrage à froid où la tension $V_{STOR}$ oscille fortement, entraînant une consigne erronée.</li>
+        <li><strong>Polyvalence du PCB :</strong> La présence des empreintes SMD de $R_{OC1}$ et $R_{OC2}$ permet de basculer facilement le circuit entre une source solaire ($80\%$) et un module thermoélectrique TEG ($50\%$) ou piézoélectrique sans refaire le routage de la carte.</li>
+      </ol>
+    </div>
+
+    <p>En fixant la somme totale du pont à $R_{TOTAL} = R_{OC1} + R_{OC2} \approx 13.0\,\text{M}\Omega$ :</p>
+    <div class="math-block">
+      $$R_{OC1} = k_{PV} \cdot R_{TOTAL} \qquad \text{et} \qquad R_{OC2} = R_{TOTAL} - R_{OC1}$$
+    </div>
+
+    <h2>4.2 Protection Contre la Surtension Batterie ($V_{BAT\_OV}$)</h2>
+    <p>
+      Le seuil $V_{BAT\_OV}$ protège les batteries Li-ion ou supercondensateurs contre la surcharge destructive en arrêtant le Boost dès que $V_{BAT} \ge V_{BAT\_OV}$.
+    </p>
+
+    <div class="math-block">
+      $$V_{BAT\_OV} = \frac{3}{2} \cdot V_{REF\_DC} \cdot \left( 1 + \frac{R_{OV2}}{R_{OV1}} \right) = 1.815\,\text{V} \cdot \left( 1 + \frac{R_{OV2}}{R_{OV1}} \right)$$
+    </div>
+    <div class="math-block">
+      $$\frac{R_{OV2}}{R_{OV1}} = \frac{V_{BAT\_OV}}{1.815\,\text{V}} - 1$$
+    </div>
+
+    <h2>4.3 Protection Contre la Décharge Profonde ($V_{BAT\_UV}$)</h2>
+    <p>
+      Le seuil $V_{BAT\_UV}$ déconnecte la charge et inhibe le Buck si la tension batterie devient trop faible.
+    </p>
+
+    <div class="math-block">
+      $$V_{BAT\_UV} = V_{REF\_DC} \cdot \left( 1 + \frac{R_{UV2}}{R_{UV1}} \right) = 1.21\,\text{V} \cdot \left( 1 + \frac{R_{UV2}}{R_{UV1}} \right)$$
+    </div>
+    <div class="math-block">
+      $$\frac{R_{UV2}}{R_{UV1}} = \frac{V_{BAT\_UV}}{1.21\,\text{V}} - 1$$
+    </div>
+
+    <h2>4.4 Tension de Sortie Régulée Buck ($V_{OUT}$)</h2>
+    <p>Le régulateur Buck régule $V_{OUT}$ par comparaison sur la broche `VOUT_SET` :</p>
+
+    <div class="math-block">
+      $$V_{OUT} = V_{REF\_DC} \cdot \left( 1 + \frac{R_{OUT2}}{R_{OUT1}} \right) = 1.21\,\text{V} \cdot \left( 1 + \frac{R_{OUT2}}{R_{OUT1}} \right)$$
+    </div>
+    <div class="math-block">
+      $$\frac{R_{OUT2}}{R_{OUT1}} = \frac{V_{OUT}}{1.21\,\text{V}} - 1$$
+    </div>
+
+    <h2>4.5 Indicateur de Disponibilité Système ($V_{BAT\_OK}$ & $V_{BAT\_OK\_HYST}$)</h2>
+    <p>
+      Le pont à 3 résistances ($R_{OK1}, R_{OK2}, R_{OK3}$) programme l'hystérésis de réveil du microcontrôleur ($V_{BAT\_OK\_PROG}$ et $V_{BAT\_OK\_HYST}$).
+    </p>
+
+    <div class="math-block">
+      $$R_{OK1} = \left( \frac{V_{REF\_DC}}{V_{BAT\_OK\_PROG}} \right) \cdot R_{OK\_TOTAL}$$
+    </div>
+    <div class="math-block">
+      $$R_{OK2} = \left( \frac{V_{BAT\_OK\_PROG} - V_{REF\_DC}}{V_{BAT\_OK\_PROG}} \right) \cdot \left( \frac{V_{REF\_DC}}{V_{BAT\_OK\_HYST}} \right) \cdot R_{OK\_TOTAL}$$
+    </div>
+    <div class="math-block">
+      $$R_{OK3} = R_{OK\_TOTAL} - R_{OK1} - R_{OK2}$$
+    </div>
+
+    <h2>4.6 Dimensionnement des Composants Passifs</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Composant</th>
+          <th>Valeur Recommandée</th>
+          <th>Rôle Fonctionnel & Spécifications Critiques</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>$L_{BST}$</strong></td>
+          <td><strong>$22\,\mu\text{H}$</strong></td>
+          <td>Inductance du Boost Harvester. $DCR < 1.5\,\Omega$, $I_{sat} > 150\,\text{mA}$ (ex: Coilcraft LPS3015-223).</td>
+        </tr>
+        <tr>
+          <td><strong>$L_{OUT}$</strong></td>
+          <td><strong>$10\,\mu\text{H}$</strong></td>
+          <td>Inductance du Buck synchrone. $DCR < 1.0\,\Omega$, $I_{sat} > 200\,\text{mA}$ (ex: Murata LQH3NPN100).</td>
+        </tr>
+        <tr>
+          <td><strong>$C_{STOR}$</strong></td>
+          <td><strong>$4.7\,\mu\text{F}$</strong></td>
+          <td><strong>Condensateur céramique X7R obligatoire</strong> placé au plus près de VSTOR pour la stabilité de boucle interne.</td>
+        </tr>
+        <tr>
+          <td><strong>$C_{IN}$</strong></td>
+          <td><strong>$4.7\,\mu\text{F} - 10\,\mu\text{F}$</strong></td>
+          <td>Filtrage et découplage d'entrée de la cellule photovoltaïque.</td>
+        </tr>
+        <tr>
+          <td><strong>$C_{REF}$</strong></td>
+          <td><strong>$10\,\text{nF} - 22\,\text{nF}$</strong></td>
+          <td>Condensateur de mémorisation MPPT à très faible courant de fuite (diélectrique C0G/NPO obligatoire).</td>
+        </tr>
+        <tr>
+          <td><strong>$C_{OUT}$</strong></td>
+          <td><strong>$22\,\mu\text{F}$</strong></td>
+          <td>Réservoir de sortie Buck pour absorber les appels de courant transitoires lors des émissions radio.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ==================== CHAPITRE 5 ==================== -->
+  <div class="chapter">
+    <h1 class="chapter-title">Chapitre 5 : Cas d'Étude & Analyse Complète du Schéma Électronique</h1>
+
+    <h2>5.1 Spécifications du Système</h2>
+    <ul>
+      <li><strong>Unité de traitement & Radio</strong> : Module RAK3172 (MCU STM32WLE5CC + LoRa RF), tension d'alimentation requise <strong>$V_{OUT} = 3.30\,\text{V}$</strong>.</li>
+      <li><strong>Capteurs associés</strong> : BME280 (Pression, Température, Humidité) + LIS2HH12 (Accéléromètre 3 axes $I^2C$).</li>
+      <li><strong>Élément de Stockage d'Énergie</strong> : <strong>Supercondensateur de Capacité $C = 10.0\,\text{F}$</strong> avec tension de charge maximale <strong>$V_{BAT\_OV} = 4.00\,\text{V}$</strong>.</li>
+      <li><strong>Seuil de coupure sous-tension</strong> : <strong>$V_{BAT\_UV} = 2.00\,\text{V}$</strong>.</li>
+      <li><strong>Générateur Solaire</strong> : Panneau solaire Silicium ($V_{OC} = 2.40\,\text{V}$, ratio optimal $k_{PV} = 80\% \implies V_{MPP} = 1.92\,\text{V}$).</li>
+      <li><strong>Pont MPPT dédié</strong> : <strong>$R_{OC1} = 10.5\,\text{M}\Omega$ et $R_{OC2} = 2.61\,\text{M}\Omega$</strong> implantés sur le schéma.</li>
+      <li><strong>Indicateur de Disponibilité</strong> : Réveil système à <strong>$V_{BAT\_OK\_PROG} = 3.60\,\text{V}$</strong> et alerte/mise en veille à <strong>$V_{BAT\_OK\_HYST} = 3.40\,\text{V}$</strong>.</li>
+    </ul>
+
+    <h2>5.2 Schéma Électronique Global Développé (Schematic Review)</h2>
+
+    <div class="schema-box">
+                    CIN (4.7uF)       LBST (22uH)
+   (+) PV o--------------+---------+-----UUUU-------+
+                         |         |                |
+                        ---       [ ] ROC1 (10.5M)  |
+                        ---       [ ]               |
+                         |         |                |
+   (-) PV o--------------+---------)----------------+--[ Pin 20: VIN_DC ]
+                         |         |                |
+                         |         +----------------)--[ Pin 19: VOC_SAMP ]
+                         |         |                |
+                         |        [ ] ROC2 (2.61M)  +--[ Pin 1:  LBOOST_SW ]
+                         |        [ ]               |
+                         |         |               --- CREF (10nF C0G)
+                        ===       ===              ---
+                        GND       GND               |
+                                                   === GND
+
+                        CSTOR (4.7uF)
+      [ Pin 18: VSTOR ]------+----------+------------+ (Alimentation interne & entrée Buck)
+                             |          |            |
+                            ---        [ ] ROV2     [ ] ROK3
+                            ---        [ ] (6.98M)  [ ] (5.49M)
+                             |          |            |
+                            === GND     +------------)----[ Pin 17: VBAT_OV ]
+                                        |            |
+                                       [ ] ROV1      +----[ Pin 15: VBAT_OK_HYST ]
+                                       [ ] (5.76M)   |
+                                        |           [ ] ROK2 (3.09M)
+                                       === GND      [ ]
+                                                     |
+                                                     +----[ Pin 16: VBAT_OK_PROG ]
+                                                     |
+                                                    [ ] ROK1 (4.42M)
+                                                    [ ]
+                                                     |
+                                                    === GND
+
+                                      Pass-FET Interne
+   [ Pin 18: VSTOR ] -------------\ switch /------------+----[ Pin 13: VBAT ]
+                                                        |
+                                                        +---o Supercap 10.0F / 4.0V
+                                                        |
+                                                       [ ] RUV2 (5.11M)
+                                                       [ ]
+                                                        |
+                                                        +---[ Pin 14: VBAT_UV ]
+                                                        |
+                                                       [ ] RUV1 (7.87M)
+                                                       [ ]
+                                                        |
+                                                       === GND
+
+                       LOUT (10uH)                     COUT (22uF)
+   [ Pin 5: LBUCK_SW ]---UUUU---+-----------------------+----o VOUT (3.30V Régulé)
+                                |                       |     |
+                               +--[ Pin 8: VOUT_SET ]  ---    +--> Alim RAK3172 MCU/LoRa
+                               |                       ---    +--> Alim BME280 & LIS2HH12
+                              [ ] ROUT2 (8.25M)         |
+                              [ ]                      === GND
+                               |
+                              [ ] ROUT1 (4.75M)
+                              [ ]
+                               |
+                              === GND
+
+   [ Pin 10: VBAT_OK ] -------------------> GPIO Interruption Réveil MCU (RAK3172)
+   [ Pin 6:  BUCK_EN ] ----+
+                           |
+                          === GND  (Active-Low : Buck toujours activé)
+    </div>
+
+    <h2>5.3 Calcul Analytique des Résistances et Choix Normalisés Série E96 (1%)</h2>
+
+    <h3>1. Échantillonnage MPPT ($80\%$ de $V_{OC}$) avec $R_{OC1} / R_{OC2}$</h3>
+    <p>Fixons la résistance totale du pont à $R_{TOTAL} = 13.0\,\text{M}\Omega$ :</p>
+    <div class="math-block">
+      $$R_{OC1} = 0.80 \times 13.0\,\text{M}\Omega = \mathbf{10.40\,\text{M}\Omega} \implies \text{Série E96 : } \mathbf{10.5\,\text{M}\Omega}$$
+      $$R_{OC2} = 13.0\,\text{M}\Omega - 10.40\,\text{M}\Omega = \mathbf{2.60\,\text{M}\Omega} \implies \text{Série E96 : } \mathbf{2.61\,\text{M}\Omega}$$
+      $$k_{PV\_reel} = \frac{10.5}{10.5 + 2.61} = \frac{10.5}{13.11} = \mathbf{80.09\%}$$
+    </div>
+
+    <h3>2. Protection Surtension du Supercondensateur ($V_{BAT\_OV} = 4.00\,\text{V}$)</h3>
+    <div class="math-block">
+      $$\frac{R_{OV2}}{R_{OV1}} = \frac{V_{BAT\_OV}}{\frac{3}{2} V_{REF\_DC}} - 1 = \frac{4.00\,\text{V}}{1.815\,\text{V}} - 1 = \frac{2.185}{1.815} \approx \mathbf{1.2039}$$
+    </div>
+    <p>En fixant $R_{OV1} = 5.76\,\text{M}\Omega$ (E96) :</p>
+    <div class="math-block">
+      $$R_{OV2} = 1.2039 \times 5.76\,\text{M}\Omega = 6.934\,\text{M}\Omega \implies \text{Série E96 : } \mathbf{6.98\,\text{M}\Omega}$$
+      $$V_{BAT\_OV\_reel} = 1.815 \times \left(1 + \frac{6.98}{5.76}\right) = 1.815 \times 2.2118 = \mathbf{4.014\,\text{V}} \quad (\text{Erreur } < 0.35\%)$$
+    </div>
+
+    <h3>3. Protection Sous-Tension ($V_{BAT\_UV} = 2.00\,\text{V}$)</h3>
+    <div class="math-block">
+      $$\frac{R_{UV2}}{R_{UV1}} = \frac{V_{BAT\_UV}}{V_{REF\_DC}} - 1 = \frac{2.00\,\text{V}}{1.21\,\text{V}} - 1 = \frac{0.79}{1.21} \approx \mathbf{0.6529}$$
+    </div>
+    <p>En fixant $R_{UV1} = 7.87\,\text{M}\Omega$ (E96) :</p>
+    <div class="math-block">
+      $$R_{UV2} = 0.6529 \times 7.87\,\text{M}\Omega = 5.138\,\text{M}\Omega \implies \text{Série E96 : } \mathbf{5.11\,\text{M}\Omega}$$
+      $$V_{BAT\_UV\_reel} = 1.21 \times \left(1 + \frac{5.11}{7.87}\right) = 1.21 \times 1.6493 = \mathbf{1.996\,\text{V}}$$
+    </div>
+
+    <h3>4. Tension de Sortie Régulée Buck ($V_{OUT} = 3.30\,\text{V}$)</h3>
+    <div class="math-block">
+      $$\frac{R_{OUT2}}{R_{OUT1}} = \frac{V_{OUT}}{V_{REF\_DC}} - 1 = \frac{3.30\,\text{V}}{1.21\,\text{V}} - 1 = \frac{2.09}{1.21} \approx \mathbf{1.7273}$$
+    </div>
+    <p>En fixant $R_{OUT1} = 4.75\,\text{M}\Omega$ (E96) :</p>
+    <div class="math-block">
+      $$R_{OUT2} = 1.7273 \times 4.75\,\text{M}\Omega = 8.205\,\text{M}\Omega \implies \text{Série E96 : } \mathbf{8.25\,\text{M}\Omega}$$
+      $$V_{OUT\_reel} = 1.21 \times \left(1 + \frac{8.25}{4.75}\right) = 1.21 \times 2.7368 = \mathbf{3.31\,\text{V}}$$
+    </div>
+
+    <h3>5. Indicateur Batterie OK ($V_{BAT\_OK\_PROG} = 3.60\,\text{V}$ / $V_{BAT\_OK\_HYST} = 3.40\,\text{V}$)</h3>
+    <p>Fixons $R_{OK\_TOTAL} = 13.0\,\text{M}\Omega$ :</p>
+    <div class="math-block">
+      $$R_{OK1} = \left(\frac{1.21}{3.60}\right) \times 13.0\,\text{M}\Omega = 4.370\,\text{M}\Omega \implies \text{Série E96 : } \mathbf{4.42\,\text{M}\Omega}$$
+      $$R_{OK2} = \left(\frac{3.60 - 1.21}{3.60}\right) \times \left(\frac{1.21}{3.40}\right) \times 13.0\,\text{M}\Omega = 3.072\,\text{M}\Omega \implies \text{Série E96 : } \mathbf{3.09\,\text{M}\Omega}$$
+      $$R_{OK3} = 13.0\,\text{M}\Omega - 4.42\,\text{M}\Omega - 3.09\,\text{M}\Omega = \mathbf{5.49\,\text{M}\Omega} \implies \text{Série E96 : } \mathbf{5.49\,\text{M}\Omega}$$
+    </div>
+
+    <h2>5.3 Tableau Récapitulatif des Composants de l'Application</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Fonction & Nœud</th>
+          <th>Seuil Cible</th>
+          <th>Formule Théorique</th>
+          <th>Résistance Théorique</th>
+          <th>Valeur E96 (1%) Retenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Ratio MPPT Solaire</strong></td>
+          <td>$80\% \cdot V_{OC}$</td>
+          <td>$k_{PV} = R_{OC1} / (R_{OC1}+R_{OC2})$</td>
+          <td>$10.40\,\text{M}\Omega / 2.60\,\text{M}\Omega$</td>
+          <td>$R_{OC1}=\mathbf{10.5\,\text{M}\Omega}$, $R_{OC2}=\mathbf{2.61\,\text{M}\Omega}$</td>
+        </tr>
+        <tr>
+          <td><strong>Surtension Supercap</strong></td>
+          <td>$V_{BAT\_OV} = 4.00\,\text{V}$</td>
+          <td>$\frac{R_{OV2}}{R_{OV1}} = \frac{4.00}{1.815} - 1 = 1.2039$</td>
+          <td>$5.76\,\text{M}\Omega / 6.93\,\text{M}\Omega$</td>
+          <td>$R_{OV1}=\mathbf{5.76\,\text{M}\Omega}$, $R_{OV2}=\mathbf{6.98\,\text{M}\Omega}$</td>
+        </tr>
+        <tr>
+          <td><strong>Sous-tension Supercap</strong></td>
+          <td>$V_{BAT\_UV} = 2.00\,\text{V}$</td>
+          <td>$\frac{R_{UV2}}{R_{UV1}} = \frac{2.00}{1.21} - 1 = 0.6529$</td>
+          <td>$7.87\,\text{M}\Omega / 5.14\,\text{M}\Omega$</td>
+          <td>$R_{UV1}=\mathbf{7.87\,\text{M}\Omega}$, $R_{UV2}=\mathbf{5.11\,\text{M}\Omega}$</td>
+        </tr>
+        <tr>
+          <td><strong>Sortie Buck Régulée</strong></td>
+          <td>$V_{OUT} = 3.30\,\text{V}$</td>
+          <td>$\frac{R_{OUT2}}{R_{OUT1}} = \frac{3.30}{1.21} - 1 = 1.7273$</td>
+          <td>$4.75\,\text{M}\Omega / 8.20\,\text{M}\Omega$</td>
+          <td>$R_{OUT1}=\mathbf{4.75\,\text{M}\Omega}$, $R_{OUT2}=\mathbf{8.25\,\text{M}\Omega}$</td>
+        </tr>
+        <tr>
+          <td><strong>Indicateur VBAT_OK</strong></td>
+          <td>$3.60\,\text{V} / 3.40\,\text{V}$</td>
+          <td>Pont triple ($R_{total} = 13\,\text{M}\Omega$)</td>
+          <td>$4.37 / 3.07 / 5.56\,\text{M}\Omega$</td>
+          <td>$R_{OK1}=\mathbf{4.42\text{M}}$, $R_{OK2}=\mathbf{3.09\text{M}}$, $R_{OK3}=\mathbf{5.49\text{M}}$</td>
+        </tr>
+        <tr>
+          <td><strong>Inductance Boost</strong></td>
+          <td>$L_{BST} = 22\,\mu\text{H}$</td>
+          <td>$DCR < 1.5\,\Omega, I_{sat} > 150\,\text{mA}$</td>
+          <td>$22\,\mu\text{H}$</td>
+          <td><strong>Coilcraft LPS3015-223MRB</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Inductance Buck</strong></td>
+          <td>$L_{OUT} = 10\,\mu\text{H}$</td>
+          <td>$DCR < 1.0\,\Omega, I_{sat} > 200\,\text{mA}$</td>
+          <td>$10\,\mu\text{H}$</td>
+          <td><strong>Murata LQH3NPN100MMEL</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Capacité Réservoir</strong></td>
+          <td>$C_{STOR} = 4.7\,\mu\text{F}$</td>
+          <td>Céramique X7R $10\,\text{V}$</td>
+          <td>$4.7\,\mu\text{F}$</td>
+          <td><strong>Murata GRM188R71A475KE15</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Capacité Sortie Buck</strong></td>
+          <td>$C_{OUT} = 22\,\mu\text{F}$</td>
+          <td>Céramique X7R $6.3\,\text{V}$</td>
+          <td>$22\,\mu\text{F}$</td>
+          <td><strong>TDK C2012X7R0J226M</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ==================== CHAPITRE 6 ==================== -->
+  <div class="chapter">
+    <h1 class="chapter-title">Chapitre 6 : Bonnes Pratiques de Routage PCB en Nano-Ampères</h1>
+
+    <h2>6.1 Problématique des Courants de Fuite de Surface</h2>
+    <p>
+      Sous une impédance de pont diviseur de $15\,\text{M}\Omega$, un courant de fuite de surface de seulement $100\,\text{nA}$ (provoqué par l'humidité ambiante, des poussières ou des résidus de flux de soudure) génère une chute de tension parasite de :
+    </p>
+
+    <div class="math-block">
+      $$\Delta V_{erreur} = R_{eq} \cdot I_{fuite} = 7.5\,\text{M}\Omega \times 100\,\text{nA} = \mathbf{750\,\text{mV}}$$
+    </div>
+
+    <p>Une telle dérive fausse considérablement les seuils de tension, risquant de dépasser la tension maximale admissible du supercondensateur.</p>
+
+    <h2>6.2 Directives d'Implantation et Layout PCB</h2>
+    <ol>
+      <li><strong>Anneaux de Garde (Guard Rings) :</strong> Entourer les pistes à haute impédance (`VOC_SAMP`, `VBAT_OV`, `VOUT_SET`) par une piste de garde reliée au potentiel de masse GND pour intercepter les courants de fuite latéraux.</li>
+      <li><strong>Nettoyage et Vernis (Conformal Coating) :</strong> Nettoyer rigoureusement le PCB aux ultrasons avec de l'alcool isopropylique après brasage, puis appliquer un vernis de tropicalisation acrylique ou silicone.</li>
+      <li><strong>Boucles de Commutation Ultra-Courtes :</strong> Réduire au strict minimum la surface de la boucle formée par les broches de commutation `LBOOST_SW`, `LBUCK_SW`, les inductances et le plan de masse pour limiter le rayonnement électromagnétique.</li>
+      <li><strong>Thermal Pad (PowerPAD) :</strong> Souder impérativement le pad thermique central du boîtier QFN au plan de masse avec au moins 4 à 6 vias thermiques.</li>
+    </ol>
+  </div>
+
+  <!-- ==================== CHAPITRE 7 ==================== -->
+  <div class="chapter">
+    <h1 class="chapter-title">Chapitre 7 : Travaux Dirigés (TD) — Bilan d'Énergie et Autonomie sur Supercondensateur 10F / 4.0V</h1>
+
+    <h2>Exercice : Calcul Rigoureux de l'Autonomie d'un Nœud LoRaWAN Autonome</h2>
+    <div class="callout callout-info">
+      <strong>Énoncé :</strong> Un nœud sans-fil équipé d'un microcontrôleur RAK3172 et de capteurs environnementaux est alimenté par la sortie régulée **$V_{OUT} = 3.30\,\text{V}$** du BQ25570. Le réservoir d'énergie est un **supercondensateur de $C = 10.0\,\text{F}$** chargé à sa tension maximale **$V_{BAT\_OV} = 4.00\,\text{V}$**. Le convertisseur fonctionne jusqu'au seuil de coupure **$V_{BAT\_UV} = 2.00\,\text{V}$**.
+      <br><br>
+      <strong>Profil de consommation du nœud :</strong>
+      <ul>
+        <li>Mode Veille profonde (Deep Sleep) : Courant consommé sous $3.3\text{V}$ : $I_{sleep} = 3.0\,\mu\text{A}$ ($P_{sleep} \approx 10.0\,\mu\text{W}$).</li>
+        <li>Mode Actif (Mesure capteurs + Transmission LoRaWAN SF7, $+14\,\text{dBm}$) : Consomme une énergie de $E_{tx} = 15.0\,\text{mJ}$ par transmission.</li>
+        <li>Période de transmission : 1 émission toutes les $10\,\text{minutes}$ ($T = 600\,\text{s}$).</li>
+      </ul>
+    </div>
+
+    <h3>Questions & Résolution Détaillée :</h3>
+    <ol>
+      <li>
+        <strong>Calculer l'énergie totale utile emmagasinée dans le supercondensateur de $10.0\,\text{F}$ :</strong>
+        <p>L'énergie extractible entre $V_{max} = 4.00\,\text{V}$ et le seuil de sous-tension $V_{min} = 2.00\,\text{V}$ est :</p>
+        <div class="math-block">
+          $$\Delta E_{stockee} = \frac{1}{2} C \left( V_{max}^2 - V_{min}^2 \right) = \frac{1}{2} \times 10.0\,\text{F} \times \left( 4.00^2 - 2.00^2 \right)$$
+          $$\Delta E_{stockee} = 5.0 \times (16.0 - 4.0) = 5.0 \times 12.0 = \mathbf{60.00\,\text{Joules}}$$
+        </div>
+      </li>
+      <li>
+        <strong>Calculer la puissance moyenne totale consommée par le nœud IoT ($P_{moy}$) :</strong>
+        <p>
+          La puissance moyenne comprend la part de la veille permanente et la part de l'impulsion de transmission :
+        </p>
+        <div class="math-block">
+          $$P_{tx\_moy} = \frac{E_{tx}}{T_{cycle}} = \frac{15.0 \times 10^{-3}\,\text{J}}{600\,\text{s}} = 25.0\,\mu\text{W}$$
+          $$P_{total\_moyen} = P_{sleep} + P_{tx\_moy} = 10.0\,\mu\text{W} + 25.0\,\mu\text{W} = \mathbf{35.0\,\mu\text{W}}$$
+        </div>
+      </li>
+      <li>
+        <strong>En tenant compte du rendement moyen du régulateur Buck ($\eta_{buck} \approx 85\%$), déterminer l'autonomie du système en obscurité totale (sans aucun apport solaire) :</strong>
+        <p>La puissance moyenne prélevée sur le supercondensateur est :</p>
+        <div class="math-block">
+          $$P_{prelevee} = \frac{P_{total\_moyen}}{\eta_{buck}} = \frac{35.0\,\mu\text{W}}{0.85} \approx \mathbf{41.18\,\mu\text{W}}$$
+        </div>
+        <p>L'autonomie théorique $t_{obscurite}$ s'obtient par :</p>
+        <div class="math-block">
+          $$t = \frac{\Delta E_{stockee}}{P_{prelevee}} = \frac{60.00\,\text{J}}{41.18 \times 10^{-6}\,\text{W}} \approx 1.457 \times 10^6\,\text{secondes}$$
+          $$t = \frac{1.457 \times 10^6}{3600 \times 24} \approx \mathbf{16.86\,\text{jours d'autonomie continue dans le noir complet !}}$$
+        </div>
+      </li>
+      <li>
+        <strong>Cas particulier : Si le nœud est configuré en mode veille seule (aucune émission, $P_{sleep} = 10\,\mu\text{W}$) :</strong>
+        <div class="math-block">
+          $$t_{veille} = \frac{60.00\,\text{J} \times 0.85}{10.0 \times 10^{-6}\,\text{W}} = 5.10 \times 10^6\,\text{s} \approx \mathbf{59.0\,\text{jours d'autonomie}}$$
+        </div>
+      </li>
+    </ol>
+  </div>
+
+</body>
+</html>

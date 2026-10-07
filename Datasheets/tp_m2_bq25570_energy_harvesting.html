@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TP & Corrigé M2 (2H) : Energy Harvesting Solaire & PMIC TI BQ25570</title>
+  
+  <!-- KaTeX pour le rendu mathématique vectoriel haute fidélité -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap');
+
+    @page {
+      size: A4;
+      margin: 16mm 15mm 18mm 15mm;
+      @bottom-right {
+        content: "Page " counter(page);
+        font-family: 'Inter', sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+      @bottom-left {
+        content: "Master 2 Électronique — TP 2H & Corrigé BQ25570";
+        font-family: 'Inter', sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Merriweather', serif;
+      font-size: 9.3pt;
+      line-height: 1.5;
+      color: #1e293b;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2, h3, h4, h5, th {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* En-tête */
+    .tp-header {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .tp-header .inst {
+      font-family: 'Inter', sans-serif;
+      font-size: 9.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #0284c7;
+    }
+
+    .tp-header .sub-inst {
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #64748b;
+    }
+
+    .tp-title-box {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-left: 5px solid #0284c7;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+
+    .tp-title-box h1 {
+      font-size: 13.5pt;
+      margin: 0 0 4px 0;
+      color: #0c4a6e;
+    }
+
+    .tp-title-box .meta {
+      font-family: 'Inter', sans-serif;
+      font-size: 8.5pt;
+      color: #475569;
+      display: flex;
+      gap: 15px;
+    }
+
+    .corrige-banner {
+      background: #fdf2f8;
+      border: 1px solid #fbcfe8;
+      border-left: 5px solid #db2777;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin: 16px 0;
+      color: #831843;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 11pt;
+    }
+
+    h2 {
+      font-size: 11pt;
+      color: #0f172a;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      border-left: 3px solid #0284c7;
+      padding-left: 8px;
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 9.8pt;
+      color: #334155;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      page-break-after: avoid;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 6px;
+      text-align: justify;
+    }
+
+    /* Boîtes de callout */
+    .callout {
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 10px 0;
+      font-size: 8.8pt;
+      page-break-inside: avoid;
+    }
+
+    .callout-info {
+      background-color: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-left: 4px solid #0284c7;
+      color: #0c4a6e;
+    }
+
+    .callout-warning {
+      background-color: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #d97706;
+      color: #78350f;
+    }
+
+    .callout-correction {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid #16a34a;
+      color: #14532d;
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 8.8pt;
+      page-break-inside: avoid;
+    }
+
+    .math-block {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin: 8px 0;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 8.3pt;
+      page-break-inside: avoid;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      text-align: left;
+      padding: 5px 8px;
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 5px 8px;
+      border: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    pre, code {
+      font-family: 'Fira Code', monospace;
+      font-size: 7.6pt;
+    }
+
+    .schema-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px;
+      margin: 8px 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 7.2pt;
+      line-height: 1.25;
+      color: #0f172a;
+      white-space: pre;
+      page-break-inside: avoid;
+    }
+
+    .question-box {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-left: 3px solid #9333ea;
+      border-radius: 6px;
+      padding: 7px 10px;
+      margin: 8px 0;
+      font-size: 8.8pt;
+      page-break-inside: avoid;
+    }
+
+    .question-box strong {
+      color: #6b21a8;
+      font-family: 'Inter', sans-serif;
+    }
+
+    ul, ol {
+      margin-top: 0;
+      margin-bottom: 6px;
+      padding-left: 18px;
+    }
+
+    li {
+      margin-bottom: 2px;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== EN-TÊTE DU TP ==================== -->
+  <div class="tp-header">
+    <div>
+      <div class="inst">Master 2 Électronique & Systèmes Embarqués</div>
+      <div class="sub-inst">Module : Systèmes Autonomes, Energy Harvesting & Capteurs IoT</div>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-family: 'Inter', sans-serif; font-size: 8.5pt; font-weight: 600;">Année Universitaire 2026 – 2027</div>
+      <div style="font-size: 8pt; color: #0284c7; font-weight: 700;">Format : 2 Heures 100% Pratique + Corrigé</div>
+    </div>
+  </div>
+
+  <div class="tp-title-box">
+    <h1>Sujet de TP (2H) : Caractérisation PV, Mesure du Courant Entrant & PMIC TI BQ25570</h1>
+    <div class="meta">
+      <span><strong>Chronométrage :</strong> 35' Manip 1 (PV) + 45' Manip 2 (I_IN & MPPT) + 40' Manip 3 (Supercap & LoRa)</span>
+      <span><strong>Stockage :</strong> Supercap 10.0 F / 4.0 V</span>
+      <span><strong>Sortie :</strong> 3.30 V</span>
+    </div>
+  </div>
+
+  <!-- ==================== 1. SYNOPSIS & RAPPEL DES VALEURS ==================== -->
+  <h2>1. Schéma Électronique & Résistances de Polarisation Pré-Calculées</h2>
+  <p>
+    Le montage utilise le PMIC Texas Instruments <strong>BQ25570</strong> avec les valeurs de résistances normalisées série E96 (1%) pré-dimensionnées ci-dessous pour un fonctionnement optimal sous $\sum R \approx 13\,\text{M}\Omega$ :
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Bloc Fonctionnel</th>
+        <th>Seuil Cible</th>
+        <th>Résistances Série E96 (1%)</th>
+        <th>Valeur Réelle Obtenue</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Pont MPPT Solaire</strong></td>
+        <td>$k_{PV} = 80\% \cdot V_{OC}$</td>
+        <td>$R_{OC1} = \mathbf{10.5\,\text{M}\Omega}, \quad R_{OC2} = \mathbf{2.61\,\text{M}\Omega}$</td>
+        <td>$k_{PV} = 80.09\%$</td>
+      </tr>
+      <tr>
+        <td><strong>Surtension Supercap</strong></td>
+        <td>$V_{BAT\_OV} = 4.00\,\text{V}$</td>
+        <td>$R_{OV1} = \mathbf{5.76\,\text{M}\Omega}, \quad R_{OV2} = \mathbf{6.98\,\text{M}\Omega}$</td>
+        <td>$V_{BAT\_OV} = 4.014\,\text{V}$</td>
+      </tr>
+      <tr>
+        <td><strong>Sous-tension Supercap</strong></td>
+        <td>$V_{BAT\_UV} = 2.00\,\text{V}$</td>
+        <td>$R_{UV1} = \mathbf{7.87\,\text{M}\Omega}, \quad R_{UV2} = \mathbf{5.11\,\text{M}\Omega}$</td>
+        <td>$V_{BAT\_UV} = 1.996\,\text{V}$</td>
+      </tr>
+      <tr>
+        <td><strong>Sortie Buck Régulée</strong></td>
+        <td>$V_{OUT} = 3.30\,\text{V}$</td>
+        <td>$R_{OUT1} = \mathbf{4.75\,\text{M}\Omega}, \quad R_{OUT2} = \mathbf{8.25\,\text{M}\Omega}$</td>
+        <td>$V_{OUT} = 3.312\,\text{V}$</td>
+      </tr>
+      <tr>
+        <td><strong>Indicateur VBAT_OK</strong></td>
+        <td>$3.60\,\text{V} / 3.40\,\text{V}$</td>
+        <td>$R_{OK1} = \mathbf{4.42\,\text{M}\Omega}, \; R_{OK2} = \mathbf{7.87\,\text{M}\Omega}, \; R_{OK3} = \mathbf{715\,\text{k}\Omega}$</td>
+        <td>$V_{OK} = 3.56\,\text{V} / 3.36\,\text{V}$</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="schema-box">
+   (+) PV o---[ Micro-Ampèremètre (I_IN) ]---+----UUUU----+ (LBST 22uH)
+                                            |   (ROC1 10.5M)
+                                           ---  
+                                           --- CIN (4.7uF)
+                                            |
+   (-) PV o---------------------------------+--------)----[ Pin 20: VIN_DC ]
+                                            |        |
+                                           ===      [ ] ROC2 (2.61M)
+                                           GND       |
+                                                    === GND
+  </div>
+
+  <!-- ==================== 2. MANIPULATION 1 (35 MIN) ==================== -->
+  <h2>2. Manipulation 1 : Caractérisation de la Cellule Photovoltaïque (35 min)</h2>
+  <ol>
+    <li>Placez le panneau solaire sous le banc d'éclairage réglé à <strong>$E = 500\,\text{Lux}$</strong> (ambiance bureau).</li>
+    <li>Mesurez la tension à vide $V_{OC}$ au multimètre haute impédance, puis le courant de court-circuit $I_{SC}$.</li>
+    <li>Connectez une boîte de résistances variable $R_L$ ($500\,\Omega$ à $200\,\text{k}\Omega$) aux bornes du panneau et relevez 8 points $(V_{PV}, I_{PV})$.</li>
+  </ol>
+
+  <div class="question-box">
+    <strong>Question 1.1 :</strong> Tracez la courbe de puissance $P = V_{PV} \cdot I_{PV} = f(V_{PV})$. Relevez le point de fonctionnement optimal $(V_{MPP}, I_{MPP})$ et la puissance maximale disponible $P_{max}$.<br>
+    <strong>Question 1.2 :</strong> Calculez le ratio $k_{PV} = \frac{V_{MPP}}{V_{OC}}$ et déterminez le Facteur de Forme $FF = \frac{P_{max}}{V_{OC} \cdot I_{SC}}$.
+  </div>
+
+  <!-- ==================== 3. MANIPULATION 2 (45 MIN) ==================== -->
+  <h2>3. Manipulation 2 : Mesure du Courant Entrant dans le BQ25570 & Rendement MPPT (45 min)</h2>
+
+  <h3>3.1 Insertion du Dispositif de Mesure de Courant Entrant ($I_{IN}$)</h3>
+  <p>
+    Insérez en série entre le pôle positif du panneau solaire et la broche `VIN_DC` du BQ25570 un micro-ampèremètre de précision (ou une résistance de shunt non-inductive $R_{sense} = 10\,\Omega$ mesurée à l'oscilloscope différentiel).
+  </p>
+
+  <div class="schema-box">
+                      I_IN
+   (+) PV o----->---[ A ]---+------------+--------UUUU (LBST) ----> [ Switch Boost ]
+                            |            |
+                           --- CIN      [ ] ROC1 (10.5M)
+                           --- (4.7uF)   |
+                            |            +------------------------> [ Pin 19: VOC_SAMP ]
+   (-) PV o-----------------+------------)------------------------> [ Pin 20: VIN_DC ]
+                            |            |
+                           ===          [ ] ROC2 (2.61M)
+                           GND           |
+                                        === GND
+  </div>
+
+  <ol>
+    <li>Insérez les résistances $R_{OC1} = 10.5\,\text{M}\Omega$ et $R_{OC2} = 2.61\,\text{M}\Omega$ sur le circuit.</li>
+    <li>Placez la voie 1 de l'oscilloscope sur $V_{IN\_DC}$ et la voie 2 sur la tension aux bornes de $R_{sense}$ (pour visualiser $I_{IN}(t)$). Base de temps : $2\,\text{s/div}$.</li>
+    <li>Éclairez le panneau ($500\,\text{Lux}$). Laissez le PMIC entrer en régime permanent ($V_{STOR} > 1.8\,\text{V}$).</li>
+  </ol>
+
+  <div class="question-box">
+    <strong>Question 2.1 :</strong> Observez la forme d'onde temporelle du courant entrant $I_{IN}(t)$. Que vaut le courant $I_{IN}$ pendant la fenêtre d'échantillonnage de $256\,\text{ms}$ ? Pourquoi ?<br>
+    <strong>Question 2.2 :</strong> Mesurez le courant moyen entrant $I_{IN\_avg}$ et la tension moyenne d'entrée $V_{IN\_avg}$ en phase active. Calculez la puissance électrique moyenne extraite du panneau :
+    $$P_{IN} = V_{IN\_avg} \times I_{IN\_avg}$$
+    <strong>Question 2.3 :</strong> Calculez l'efficacité de poursuite du point de puissance maximale (Rendement MPPT) :
+    $$\eta_{MPPT} = \frac{P_{IN}}{P_{max}} \times 100\%$$
+    <strong>Question 2.4 :</strong> Mesurez le courant $I_{STOR}$ entrant dans le réservoir intermédiaire sous $V_{STOR} = 3.0\,\text{V}$. Déduisez-en le rendement du convertisseur Boost : $\eta_{boost} = \frac{V_{STOR} \cdot I_{STOR}}{V_{IN} \cdot I_{IN}}$.
+  </div>
+
+  <!-- ==================== 4. MANIPULATION 3 (40 MIN) ==================== -->
+  <div class="page-break"></div>
+  <h2>4. Manipulation 3 : Charge du Supercondensateur 10F, VBAT_OK & Décharge LoRa (40 min)</h2>
+  <ol>
+    <li>Connectez le supercondensateur de $10.0\,\text{F}$ sur la broche $V_{BAT}$.</li>
+    <li>Surveillez à l'oscilloscope la montée de $V_{BAT}$ et l'état logique de `VBAT_OK`.</li>
+    <li>Connectez le module radio RAK3172 sur la sortie régulée $V_{OUT} = 3.30\,\text{V}$.</li>
+    <li>Une fois $V_{BAT} = 4.00\,\text{V}$, coupez l'éclairage ($0\,\text{Lux}$) et observez la décharge sous émissions LoRaWAN régulières.</li>
+  </ol>
+
+  <div class="question-box">
+    <strong>Question 3.1 :</strong> Relevez la tension $V_{BAT}$ lors du basculement à l'état haut de `VBAT_OK` ($V_{OK\_HIGH}$) et vérifiez l'arrêt de charge au seuil de surtension $V_{BAT\_OV} = 4.00\,\text{V}$.<br>
+    <strong>Question 3.2 :</strong> Mesurez la chute de tension transitoire $\Delta V_{OUT}$ lors de l'impulsion radio LoRa ($100\,\text{mA}$). Quel est le rôle du condensateur $C_{OUT} = 22\,\mu\text{F}$ ?
+  </div>
+
+  <!-- ==================== CORRIGÉ INTÉGRAL ==================== -->
+  <div class="corrige-banner">
+    📝 CORRIGÉ INTÉGRAL & GUIDE DE RÉSOLUTION DU TP
+  </div>
+
+  <h2>Correction Détaillée des Manipulations</h2>
+
+  <h3>1. Caractérisation de la Cellule Photovoltaïque (Résultats Types sous 500 Lux)</h3>
+  <div class="callout-correction">
+    * Tension à vide mesurée : $V_{OC} = \mathbf{2.40\,\text{V}}$ (4 cellules Si en série, $\approx 0.60\,\text{V/cellule}$).<br>
+    * Courant de court-circuit mesuré : $I_{SC} = \mathbf{260\,\mu\text{A}}$.<br>
+    * Point de Puissance Maximale extrait de la courbe $P(V)$ :
+      $$V_{MPP} = \mathbf{1.92\,\text{V}}, \quad I_{MPP} = \mathbf{220\,\mu\text{A}} \implies P_{max} = 1.92\,\text{V} \times 220\,\mu\text{A} = \mathbf{422.4\,\mu\text{W}}$$
+    * Facteur de Forme ($FF$) :
+      $$FF = \frac{P_{max}}{V_{OC} \cdot I_{SC}} = \frac{422.4\,\mu\text{W}}{2.40\,\text{V} \times 260\,\mu\text{A}} = \frac{422.4}{624.0} = \mathbf{0.677} \quad (67.7\%)$$
+    * Ratio MPPT expérimental : $k_{PV} = \frac{V_{MPP}}{V_{OC}} = \frac{1.92}{2.40} = \mathbf{0.800} \implies \mathbf{80.0\%}$ (Conforme au modèle FOCV).
+  </div>
+
+  <h3>2. Mesure du Courant Entrant $I_{IN}$ & Rendements (Résultats Types)</h3>
+  <div class="callout-correction">
+    <strong>Forme d'onde de $I_{IN}(t)$ et comportement MPPT :</strong><br>
+    * <strong>Pendant les 256 ms d'échantillonnage :</strong> Le commutateur Boost interne s'ouvre, le convertisseur cesse de tirer de l'énergie. Le courant entrant s'annule ($I_{IN} = 0\,\mu\text{A}$) et la tension $V_{IN}$ remonte à $V_{OC} = 2.40\,\text{V}$. La fraction $0.80 \cdot V_{OC} = 1.92\,\text{V}$ est mémorisée sur $C_{REF}$.<br>
+    * <strong>Pendant la phase active de régulation (15.74 s) :</strong> Le Boost découpe en mode PFM DCM. Le courant moyen entrant mesuré est :
+      $$I_{IN\_avg} = \mathbf{218\,\mu\text{A}}, \quad V_{IN\_avg} = \mathbf{1.91\,\text{V}}$$
+    * <strong>Puissance moyenne extraite du panneau :</strong>
+      $$P_{IN} = V_{IN\_avg} \times I_{IN\_avg} = 1.91\,\text{V} \times 218\,\mu\text{A} = \mathbf{416.4\,\mu\text{W}}$$
+    * <strong>Efficacité de poursuite MPPT :</strong>
+      $$\eta_{MPPT} = \frac{P_{IN}}{P_{max}} = \frac{416.4\,\mu\text{W}}{422.4\,\mu\text{W}} \times 100\% = \mathbf{98.6\%}$$
+    * <strong>Rendement du convertisseur Boost :</strong> Pour $V_{STOR} = 3.0\,\text{V}$ et $I_{STOR} = 122\,\mu\text{A}$ ($P_{STOR} = 366\,\mu\text{W}$) :
+      $$\eta_{boost} = \frac{P_{STOR}}{P_{IN}} = \frac{366.0\,\mu\text{W}}{416.4\,\mu\text{W}} = \mathbf{87.9\%}$$
+  </div>
+
+  <h3>3. Supercondensateur, Sortie Buck & Décharge LoRa (Résultats Types)</h3>
+  <div class="callout-correction">
+    * <strong>Seuil de réveil `VBAT_OK` :</strong> Commutation haute mesurée à $V_{BAT} = \mathbf{3.58\,\text{V}}$ (Cible : $3.60\,\text{V}$).<br>
+    * <strong>Seuil de surtension $V_{BAT\_OV}$ :</strong> Blocage de charge mesuré à $V_{BAT} = \mathbf{4.01\,\text{V}}$ (Cible : $4.00\,\text{V}$).<br>
+    * <strong>Énergie utile stockée ($10.0\,\text{F}$) :</strong> $\Delta E = \frac{1}{2} \times 10 \times (4.00^2 - 2.00^2) = \mathbf{60.00\,\text{Joules}}$ ($16.67\,\text{mWh}$).<br>
+    * <strong>Chute transitoire lors du pic RF :</strong> L'appel de $100\,\text{mA}$ pendant $50\,\text{ms}$ est lissé par $C_{OUT} = 22\,\mu\text{F}$, limitant le ripple à $\Delta V_{OUT} \approx \mathbf{45\,\text{mV}}$, garantissant une alimentation sans reset ($V_{OUT} > 3.25\,\text{V}$).
+  </div>
+
+  <!-- ==================== BARÈME DE NOTATION ==================== -->
+  <h2>Grille d'Évaluation & Barème de Notation (20 Points)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Partie Évaluée</th>
+        <th>Critères de Réussite & Rigueur Expérimentale</th>
+        <th>Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Manip 1 : Caractérisation PV</strong></td>
+        <td>Précision des mesures $(V, I)$, tracé $P(V)$, identification $V_{MPP}, P_{max}$ et calcul $FF$</td>
+        <td><strong>/ 6 pts</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Manip 2 : Courant $I_{IN}$ & MPPT</strong></td>
+        <td>Montage ampermétrique, capture temporelle $I_{IN}(t)$, calcul $P_{IN}$, $\eta_{MPPT}$ et $\eta_{boost}$</td>
+        <td><strong>/ 8 pts</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Manip 3 : Supercap & LoRa</strong></td>
+        <td>Validation de $V_{BAT\_OV}=4.0\text{V}$, basculement `VBAT_OK`, tenue impulsionnelle $V_{OUT}$</td>
+        <td><strong>/ 6 pts</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>
